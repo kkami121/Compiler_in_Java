@@ -13,7 +13,7 @@ public class Main {
         String inputText = "";
         List<String> memory = new ArrayList<>();
 
-        File file = new File("tests/samples/program2.decaf"); //파일 불러오기
+        File file = new File("LexicalAnalyzer/tests/samples/program2.decaf"); //파일 불러오기
         Scanner scanner = new Scanner(file);
 
         inputText = scanner.nextLine();// 불러온 파일의 각 라인을 입력
@@ -25,19 +25,21 @@ public class Main {
         
         int lineNum = 1; //row값 초기화
         int colNum = 0; //column값 초기화
-
+    
         char[] string = inputText.toCharArray(); //문자열을 char형태 배열로 변환
-
+        
         for (int i = 0; i < string.length; i++) { //string의 길이 만큼 반복
             boolean unknown_char = true;
-            colNum++;
-            // System.out.println(string.length); length = 103
+            colNum++; // System.out.println(string.length); length = 103
 
             if (string[i] >= '0' && string[i] <= '9') {//배열이 숫자인지 확인
                 String temp = "";
                 
-                while (i < string.length && string[i] >= '0' && string[i] <= '9') {
-                    temp += string[i]; //temp에 읽어온 수를 string타입으로 변경하며 저장
+                // 숫자로 시작하는 것들 중 || string[i] == '.' || string[i] == 'e' || string[i] == '+' || string[i] == '-' 추가하여 실수를 판별
+                // 숫자로 시작하는 것들 중 || string[i] == 'x' || string[i] == 'A' || string[i] == 'B' || string[i] == 'C' || string[i] == 'D' || string[i] == 'E' || string[i] == 'F'추가하여 0x142등의 16진수를 표현한다.
+                while (i < string.length && string[i] >= '0' && string[i] <= '9' || string[i] == '.' || string[i] == 'e' || string[i] == '+' || string[i] == '-' || string[i] == 'x'
+                || string[i] >= 'A' && string[i] <= 'F' || string[i] >= 'a' && string[i] <= 'f') {
+                    temp += string[i]; //임시 변수 temp에 string[i]를 통해 읽어온 정수나 실수를 문자열 변경하며 저장 후 출력
                     i++;
                     colNum++;
                 }
@@ -45,7 +47,6 @@ public class Main {
                 unknown_char = false;
             }
             
-
             if ((string[i] >= 'A' && string[i] <= 'Z') || string[i] == '_' || (string[i] >= 'a' && string[i] <= 'z')) { // 문자열 확인
                 String temp = "";
                 temp += string[i];
@@ -59,6 +60,7 @@ public class Main {
                     i++;
                     colNum++;
                 }
+                
 
                 // 식별자, 키워드 구분
                 if (temp.equals("if") || temp.equals("else") || temp.equals("for") || temp.equals("while") || temp.equals("void") ||
@@ -72,7 +74,7 @@ public class Main {
                     System.out.println(String.format("%1$-14s line %2$d cols %3$d-%4$d is T_BoolConstant (token value: %5$s)", temp, lineNum, colNum - temp.length(), colNum - 1, temp));
                 }
                 else {  // 키워드(타입), 식별자
-                    // How to deal with identifiers?
+                    System.out.println(String.format("%1$-14s line %2$d cols %3$d-%4$d is T_IntConstant (token value: %5$s)", temp, lineNum, colNum - temp.length(), colNum - 1, temp);
                 }
 
                 if (i >= string.length) {
