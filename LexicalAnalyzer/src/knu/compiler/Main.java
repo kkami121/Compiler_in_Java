@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
 public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -25,9 +24,9 @@ public class Main {
         
         int lineNum = 1; //row값 초기화
         int colNum = 0; //column값 초기화
-    
         char[] string = inputText.toCharArray(); //문자열을 char형태 배열로 변환
         
+    
         for (int i = 0; i < string.length; i++) { //string의 길이 만큼 반복
             boolean unknown_char = true;
             colNum++; // System.out.println(string.length); length = 103
@@ -38,7 +37,7 @@ public class Main {
                 // 숫자로 시작하는 것들 중 || string[i] == '.' || string[i] == 'e' || string[i] == '+' || string[i] == '-' 추가하여 실수를 판별
                 // 숫자로 시작하는 것들 중 || string[i] == 'x' || string[i] == 'A' || string[i] == 'B' || string[i] == 'C' || string[i] == 'D' || string[i] == 'E' || string[i] == 'F'추가하여 0x142등의 16진수를 표현한다.
                 while (i < string.length && string[i] >= '0' && string[i] <= '9' || string[i] == '.' || string[i] == 'e' || string[i] == '+' || string[i] == '-' || string[i] == 'x'
-                || string[i] >= 'A' && string[i] <= 'F' || string[i] >= 'a' && string[i] <= 'f') {
+                || string[i] >= 'A' && string[i] <= 'F' || string[i] >= 'a' && string[i] <= 'f') { // @@@@@@@ 16진수는 정수로 변환해서 출력할 수 있도록 바꿔야함
                     temp += string[i]; //임시 변수 temp에 string[i]를 통해 읽어온 정수나 실수를 문자열 변경하며 저장 후 출력
                     i++;
                     colNum++;
@@ -50,7 +49,7 @@ public class Main {
             if ((string[i] >= 'A' && string[i] <= 'Z') || string[i] == '_' || (string[i] >= 'a' && string[i] <= 'z')) { // 문자열 확인
                 String temp = "";
                 temp += string[i];
-
+                
                 i++;
                 colNum++;
                 while (i < string.length && ((string[i] >= 'A' && string[i] <= 'Z') || string[i] == '_'
@@ -61,7 +60,6 @@ public class Main {
                     colNum++;
                 }
                 
-
                 // 식별자, 키워드 구분
                 if (temp.equals("if") || temp.equals("else") || temp.equals("for") || temp.equals("while") || temp.equals("void") ||
                         temp.equals("class") || temp.equals("extends") || temp.equals("implements") || temp.equals("interface") ||
@@ -73,10 +71,13 @@ public class Main {
                 } else if (temp.equals("true") || temp.equals("false")) {
                     System.out.println(String.format("%1$-14s line %2$d cols %3$d-%4$d is T_BoolConstant (token value: %5$s)", temp, lineNum, colNum - temp.length(), colNum - 1, temp));
                 }
-                else {  // 키워드(타입), 식별자
-                    System.out.println(String.format("%1$-14s line %2$d cols %3$d-%4$d is T_IntConstant (token value: %5$s)", temp, lineNum, colNum - temp.length(), colNum - 1, temp);
-                }
 
+                
+                else {  // 키워드(타입), 식별자
+                    
+                    System.out.println(String.format("%1$-14s line %2$d cols %3$d-%4$d is T_IntConstant (token address: %5$s)", temp, lineNum, colNum - temp.length(), colNum - 1, temp.substring(0, 1).toUpperCase() + temp.substring(1)));// @@@@@@@@ temp의 인덱스 값을 가져와야 하는데
+                }
+            
                 if (i >= string.length) {
                     break;
                 } else {
@@ -158,9 +159,19 @@ public class Main {
                     unknown_char = false;
                 }
             }
-
-            // How to deal with single-line and multi-line comments?
-
+            if(string[i] == '/'){
+                String temp = "" + string[i];
+                if(string[i+1] == '/'){
+                    i +=2;
+                    while(string[i] != '\n'){
+                        i++;
+                    }
+                    temp += string[i+1];
+                }
+            }
+            
+            
+            
             if (string[i] == '\n') {
                 colNum = 0;
                 lineNum++;
@@ -170,6 +181,6 @@ public class Main {
                     System.out.println(String.format("*** Unrecognized char: '%c'\n", string[i]));
                 }
             }
-        }
+        } 
     }
 }

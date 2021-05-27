@@ -1,7 +1,7 @@
 int a;
 
 void main() {
-   int b;
+   //int b
    int a;
    int d;
 
