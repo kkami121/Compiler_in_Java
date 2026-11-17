@@ -1,0 +1,6 @@
+# JitPack 빌드 설정: https://jitpack.io/docs/BUILDING/
+# JDK 17로 빌드하지만 pom.xml의 release-8 프로필 덕분에 결과물은 Java 8 이상에서 동작한다.
+jdk:
+  - openjdk17
+install:
+  - mvn -B -DskipTests install

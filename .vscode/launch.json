@@ -6,22 +6,24 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Launch sada",
+            "name": "Metrics: current file",
             "request": "launch",
-            "mainClass": "sada",
-            "projectName": "Compiler_in_Java_90bbd297"
+            "mainClass": "io.github.kkami121.codeanalyzer.Main",
+            "args": "metrics ${file}"
         },
         {
             "type": "java",
-            "name": "Launch Current File",
+            "name": "Decaf: program3.decaf",
             "request": "launch",
-            "mainClass": "${file}"
+            "mainClass": "io.github.kkami121.codeanalyzer.Main",
+            "args": "tokens ${workspaceFolder}/src/test/resources/decaf/program3.decaf --format decaf"
         },
         {
             "type": "java",
-            "name": "Launch Main",
+            "name": "REST API server (port 8080)",
             "request": "launch",
-            "mainClass": "knu.compiler.Main"
+            "mainClass": "io.github.kkami121.codeanalyzer.Main",
+            "args": "serve --port 8080"
         }
     ]
 }
