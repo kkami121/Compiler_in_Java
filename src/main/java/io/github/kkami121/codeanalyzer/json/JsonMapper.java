@@ -1,6 +1,10 @@
 package io.github.kkami121.codeanalyzer.json;
 
+import io.github.kkami121.codeanalyzer.analysis.AnalysisReport;
+import io.github.kkami121.codeanalyzer.analysis.Finding;
+import io.github.kkami121.codeanalyzer.analysis.StyleProfile;
 import io.github.kkami121.codeanalyzer.clone.ClonePair;
+import io.github.kkami121.codeanalyzer.parser.ParseError;
 import io.github.kkami121.codeanalyzer.clone.CodeFragment;
 import io.github.kkami121.codeanalyzer.lexer.LexError;
 import io.github.kkami121.codeanalyzer.lexer.LexResult;
@@ -87,6 +91,57 @@ public final class JsonMapper {
         map.put("effort", round(h.effort()));
         map.put("timeSeconds", round(h.timeSeconds()));
         map.put("estimatedBugs", round(h.estimatedBugs()));
+        return map;
+    }
+
+    public static Map<String, Object> toMap(AnalysisReport report) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("source", report.sourceName());
+        map.put("language", report.language());
+        map.put("highestSeverity", report.highestSeverity());
+        map.put("severityCounts", report.severityCounts());
+        Map<String, Object> structure = new LinkedHashMap<>();
+        structure.put("classes", report.classCount());
+        structure.put("functions", report.functionCount());
+        structure.put("imports", report.importCount());
+        structure.put("parseErrors", report.parseErrors().size());
+        map.put("structure", structure);
+        List<Object> findings = new ArrayList<>();
+        for (Finding finding : report.findings()) {
+            Map<String, Object> f = new LinkedHashMap<>();
+            f.put("rule", finding.ruleId());
+            f.put("category", finding.category());
+            f.put("severity", finding.severity());
+            f.put("cwe", finding.cwe());
+            f.put("line", finding.line());
+            f.put("column", finding.column());
+            f.put("message", finding.message());
+            findings.add(f);
+        }
+        map.put("findings", findings);
+        List<Object> parseErrors = new ArrayList<>();
+        for (ParseError error : report.parseErrors()) {
+            Map<String, Object> e = new LinkedHashMap<>();
+            e.put("line", error.line());
+            e.put("column", error.column());
+            e.put("message", error.message());
+            parseErrors.add(e);
+        }
+        map.put("parseErrors", parseErrors);
+        map.put("metrics", toMap(report.metrics()));
+        StyleProfile style = report.style();
+        if (style != null) {
+            Map<String, Object> s = new LinkedHashMap<>();
+            s.put("note", StyleProfile.NOTE);
+            s.put("commentRatio", style.commentRatio());
+            s.put("documentedFunctionRatio", style.documentedFunctionRatio());
+            s.put("typedParameterRatio", style.typedParameterRatio());
+            s.put("namingConsistency", style.namingConsistency());
+            s.put("dominantNamingStyle", style.dominantNamingStyle());
+            s.put("averageIdentifierLength", style.averageIdentifierLength());
+            s.put("averageFunctionLines", style.averageFunctionLines());
+            map.put("style", s);
+        }
         return map;
     }
 

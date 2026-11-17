@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Analyze: current file",
+            "request": "launch",
+            "mainClass": "io.github.kkami121.codeanalyzer.Main",
+            "args": "analyze ${file}"
+        },
+        {
+            "type": "java",
             "name": "Metrics: current file",
             "request": "launch",
             "mainClass": "io.github.kkami121.codeanalyzer.Main",

@@ -51,6 +51,19 @@ class AnalyzerServerTest {
     }
 
     @Test
+    void analyze() throws IOException {
+        Response response = request("POST", "/analyze",
+                "{\"name\": \"a.py\", \"code\": \"import os\\ndef f(p):\\n    os.system('rm ' + p)\\n\"}");
+        assertEquals(200, response.status);
+        Map<?, ?> body = (Map<?, ?>) Json.parse(response.body);
+        assertEquals("HIGH", body.get("highestSeverity"));
+        Map<?, ?> finding = (Map<?, ?>) ((List<?>) body.get("findings")).get(0);
+        assertEquals("command-injection", finding.get("rule"));
+        assertEquals("CWE-78", finding.get("cwe"));
+        assertTrue(((Map<?, ?>) body.get("style")).get("note").toString().contains("not evidence"));
+    }
+
+    @Test
     void tokenizeDetectsLanguageFromName() throws IOException {
         Response response = request("POST", "/tokenize", "{\"name\": \"A.java\", \"code\": \"int x;\"}");
         assertEquals(200, response.status);

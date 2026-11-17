@@ -6,13 +6,13 @@
 
     <groupId>io.github.kkami121</groupId>
     <artifactId>code-analyzer</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>Code Analyzer</name>
     <description>
-        Source code analysis library for Java, Python and Decaf: tokenization,
-        complexity/difficulty metrics and token-based clone detection. No runtime dependencies.
+        Source code analysis library for Java, Python and Decaf: tokenization, parsing,
+        complexity metrics, quality/security findings (CWE) and clone detection. No runtime dependencies.
     </description>
     <url>https://github.com/kkami121/Compiler_in_Java</url>
 

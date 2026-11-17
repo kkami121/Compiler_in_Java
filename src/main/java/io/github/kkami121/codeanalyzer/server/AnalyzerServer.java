@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
  * GET  /languages                                      지원 언어
  * POST /tokenize    {"language": "java", "code": "..."}
  * POST /metrics     {"language": "python", "code": "..."}
+ * POST /analyze     {"language": "python", "code": "..."}   품질/보안 발견 사항 + 지표 + 스타일
  * POST /clones      {"files": [{"name": "A.java", "code": "..."}, ...], "minTokens": 30}
  * POST /similarity  {"first": {"name": "a.py", "code": "..."}, "second": {...}}
  * </pre>
@@ -99,7 +100,7 @@ public final class AnalyzerServer {
                 return;
             }
             boolean known = path.equals("/tokenize") || path.equals("/metrics") || path.equals("/clones")
-                    || path.equals("/similarity");
+                    || path.equals("/similarity") || path.equals("/analyze");
             if (!known) {
                 sendError(exchange, 404, "Not found: " + path);
                 return;
@@ -134,6 +135,10 @@ public final class AnalyzerServer {
             case "/metrics": {
                 SourceFile file = sourceFile(request, "request");
                 return JsonMapper.toMap(CodeAnalyzer.measure(file));
+            }
+            case "/analyze": {
+                SourceFile file = sourceFile(request, "request");
+                return JsonMapper.toMap(CodeAnalyzer.analyze(file));
             }
             case "/clones": {
                 Object filesValue = request.get("files");

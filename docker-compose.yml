@@ -1,0 +1,23 @@
+# docker compose up -d api                         → http://127.0.0.1:8080 (로컬에서만 접근)
+# docker compose run --rm cli analyze app.py       → 현재 폴더의 파일을 분석 (읽기 전용 마운트)
+services:
+  api:
+    build: .
+    image: code-analyzer:0.2.0
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  cli:
+    image: code-analyzer:0.2.0
+    profiles: ["cli"]
+    volumes:
+      - ./:/work:ro
+    working_dir: /work
+    read_only: true
+    network_mode: none

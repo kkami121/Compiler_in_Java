@@ -1,6 +1,10 @@
 package io.github.kkami121.codeanalyzer;
 
+import io.github.kkami121.codeanalyzer.analysis.AnalysisReport;
+import io.github.kkami121.codeanalyzer.analysis.Finding;
+import io.github.kkami121.codeanalyzer.analysis.Severity;
 import io.github.kkami121.codeanalyzer.clone.CloneDetector;
+import io.github.kkami121.codeanalyzer.parser.ParseError;
 import io.github.kkami121.codeanalyzer.json.Json;
 import io.github.kkami121.codeanalyzer.json.JsonMapper;
 import io.github.kkami121.codeanalyzer.lexer.DecafFormatter;
@@ -23,6 +27,7 @@ public final class Main {
             "Code Analyzer " + CodeAnalyzer.VERSION,
             "",
             "Usage:",
+            "  analyze <file>... [--language L] [--format text|json] [--fail-on low|medium|high|critical]",
             "  tokens <file> [--language L] [--format text|json|decaf]",
             "  metrics <file> [--language L]",
             "  clones <file>... [--min-tokens N]",
@@ -56,6 +61,8 @@ public final class Main {
         }
         Options options = Options.parse(args);
         switch (args[0]) {
+            case "analyze":
+                return analyze(options);
             case "tokens":
                 return tokens(options);
             case "metrics":
@@ -78,6 +85,59 @@ public final class Main {
             default:
                 throw new IllegalArgumentException("Unknown command '" + args[0] + "'. Run 'help' for usage.");
         }
+    }
+
+    /**
+     * 종합 분석. --fail-on 을 주면 그 심각도 이상의 발견 사항이 있을 때 종료 코드 1 (CI용).
+     */
+    private static int analyze(Options options) throws IOException {
+        if (options.files.isEmpty()) {
+            throw new IllegalArgumentException("analyze needs at least one file");
+        }
+        String format = options.value("--format", "text");
+        String failOn = options.value("--fail-on", null);
+        Severity threshold = failOn == null ? null : Severity.valueOf(failOn.toUpperCase(java.util.Locale.ROOT));
+        List<Object> reports = new ArrayList<>();
+        boolean failed = false;
+        for (SourceFile file : options.sourceFiles()) {
+            AnalysisReport report = CodeAnalyzer.analyze(file);
+            Severity highest = report.highestSeverity();
+            if (threshold != null && highest != null && highest.compareTo(threshold) >= 0) {
+                failed = true;
+            }
+            if (format.equals("json")) {
+                reports.add(JsonMapper.toMap(report));
+            } else if (format.equals("text")) {
+                printReport(report);
+            } else {
+                throw new IllegalArgumentException("Unknown format '" + format + "' (text, json)");
+            }
+        }
+        if (format.equals("json")) {
+            System.out.println(Json.writePretty(reports.size() == 1 ? reports.get(0) : reports));
+        }
+        return failed ? 1 : 0;
+    }
+
+    private static void printReport(AnalysisReport report) {
+        System.out.println("== " + report.sourceName() + " (" + report.language().displayName() + ")");
+        System.out.printf("   difficulty %s, max complexity %d, %d functions, %d classes%s%n",
+                report.metrics().difficulty(), report.metrics().maxCyclomaticComplexity(), report.functionCount(),
+                report.classCount(), report.parseErrors().isEmpty() ? "" : ", " + report.parseErrors().size()
+                        + " parse errors");
+        if (!report.rulesApplied()) {
+            System.out.println("   (rules are not available for this language; metrics only)");
+        }
+        for (Finding finding : report.findings()) {
+            System.out.printf("   %4d:%-3d %-8s %-8s %-28s %s%n", finding.line(), finding.column(), finding.severity(),
+                    finding.cwe() == null ? "" : finding.cwe(), finding.ruleId(), finding.message());
+        }
+        for (ParseError error : report.parseErrors()) {
+            System.out.printf("   %4d:%-3d %-8s %-8s %-28s %s%n", error.line(), error.column(), "ERROR", "",
+                    "syntax", error.message());
+        }
+        System.out.println("   " + report.findings().size() + " findings " + report.severityCounts());
+        System.out.println();
     }
 
     private static int tokens(Options options) throws IOException {
